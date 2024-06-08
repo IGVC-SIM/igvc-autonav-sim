@@ -1,0 +1,43 @@
+# Build files
+build/
+devel/
+logs/
+.catkin_tools/
+.catkin_workspace
+
+
+# Random stuff in our folders
+x11dockerscript.sh
+ubuntu20
+
+
+# Simulation packages
+src/robot_description/
+src/simulation/
+
+
+# Pulled packages
+
+## REQUIRED Zed wrapper
+### https://github.com/stereolabs/zed-ros-wrapper
+zed-ros-wrapper/
+zed-wrapper/
+
+## REQUIRED Velodyne LIDAR 
+### https://github.com/Tevhit/pcl_velodyne_ws
+src/turtlebot3_velodyne/
+src/velodyne_description/
+src/velodyne_gazebo_plugins/
+src/progressive_morphological_filter/
+src/basic_pcl/
+
+## Detection
+### Obstacle detection
+#### REQUIRED https://github.com/SS47816/lidar_obstacle_detector
+src/lidar_obstacle_detector
+#### https://github.com/jsk-ros-pkg/jsk_visualization
+src/jsk_visualization/
+#### https://github.com/jack-oquin/velodyne_height_map
+src/velodyne_height_map/
+#### https://github.com/tysik/obstacle_detector
+src/obstacle_detector
