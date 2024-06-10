@@ -4,7 +4,7 @@
 ## If you download the launch file to a package(say mapping) in your workspace, run:
 
 ```bash
-cd catkin_ws/
+cd ~/workspace/
 catkin_make
 roslaunch mapping rtab_mapping.launch hector:=true camera:=false
 ```
