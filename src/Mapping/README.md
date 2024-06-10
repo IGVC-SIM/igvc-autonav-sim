@@ -1,4 +1,4 @@
-## To run rtabmapping on your environment, download this file to your workspace and simply run:
+## To run rtabmapping on your environment, download the launch file to your workspace and simply run:
 ### roslaunch rtab_mapping.launch hector:=true camera:=false
 
 ## If you download the launch file to a package(say mapping) in your workspace, run:
