@@ -7,6 +7,7 @@ logs/
 
 
 # Random stuff in our folders
+.vscode/
 x11dockerscript.sh
 ubuntu20
 
