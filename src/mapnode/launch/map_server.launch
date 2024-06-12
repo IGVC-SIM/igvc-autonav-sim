@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Map Server -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find mapnode)/maps/map.yaml" output="screen"/>
+
+  <!-- AMCL for localization -->
+  <node name="amcl" pkg="amcl" type="amcl" output="screen">
+    <param name="use_map_topic" value="true"/>
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_link"/>
+    <param name="global_frame_id" value="map"/>
+    <param name="scan_topic" value="scan"/>
+  </node>
+
+  <!-- Move Base for path planning -->
+  <include file="$(find mapnode)/launch/move_base.launch"/>
+
+  <!-- RViz for visualization -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find mapnode)/rviz/navigation.rviz"/>
+</launch>
