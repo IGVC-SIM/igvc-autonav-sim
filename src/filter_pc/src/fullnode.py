@@ -36,6 +36,10 @@ def filter_point_cloud(data):
 
     z_values = [point[2] for point in int_data]
     z_threshold = max(z_values) * 0.9
+    print("Ythreshold",y_threshold)
+    print("Ythreshold2",y_threshold2)
+
+    print("Z_threshold",z_threshold)
 
 
     for i, x in enumerate(int_data):
