@@ -1,0 +1,22 @@
+<!-- <launch>
+  <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" output="screen">
+    <param name="frame_id" value="zed2i_depth"/>
+    <param name="resolution" value="0.1"/>
+    <param name="sensor_model/max_range" value="20.0"/>-->
+    <!-- <param name="point_cloud_topic" value="/filtered_point_cloud"/> -->
+    <!-- <remap from="cloud_in" to="/filtered_point_cloud" /> -->
+    <!--
+    <remap from="cloud_in" to="/rotated_point_cloud" /> 
+    <param name="base_frame_id" value="zed2i_depth" />
+  </node>
+</launch>
+ -->
+<launch>
+  <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" output="screen">
+    <param name="frame_id" value="odom"/>
+    <param name="resolution" value="0.4"/>
+    <param name="sensor_model/max_range" value="20.0"/>
+    <remap from="cloud_in" to="/altered_point_cloud" /> 
+    <param name="base_frame_id" value="odom" />
+  </node>
+</launch>
