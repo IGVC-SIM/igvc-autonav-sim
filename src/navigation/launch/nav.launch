@@ -10,8 +10,6 @@
     <remap from="/gps/fix" to="/gps/fix" />
     <remap from="/odometry/filtered" to="/odom"/>
   </node>
-
-  <node pkg="navigation" type="map_node" name="local_map_gen"/>
   
   <node pkg="filter_pc" type="filter" name="pointcloudhandler"/>
 
