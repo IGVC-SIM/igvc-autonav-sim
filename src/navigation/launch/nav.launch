@@ -5,6 +5,8 @@
 
     <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node">
 
+    <node pkg="navigation" type="gps" name="gps_redirect"/>
+
     <param name="publish_filtered_gps" value="true"/>
     <remap from="/imu/data" to="/imu" />
     <remap from="/gps/fix" to="/gps/fix" />
