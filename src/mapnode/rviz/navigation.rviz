@@ -33,7 +33,7 @@ Visualization Manager:
       Name: Scan
       Topic: /scan
     - Class: rviz/TF
-      Enabled: false
+      Enabled: true
       Name: TF
       Value: 0
   Name: root
