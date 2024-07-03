@@ -60,3 +60,5 @@ src/custom_obstacle_detector/
 x11dockerscript.sh
 ubuntu20
 topic.txt
+frames.gv
+mapdata.txt

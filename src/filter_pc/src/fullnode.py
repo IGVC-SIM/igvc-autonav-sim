@@ -1,93 +1,72 @@
 #!/usr/bin/env python3
 
 import rospy
-from sensor_msgs.msg import PointCloud2, PointField
-import sensor_msgs.point_cloud2 as pc2
-import struct
+from sensor_msgs.msg import PointCloud2
 import numpy as np
 import ctypes
+import sensor_msgs.point_cloud2 as pc2
 
-def get_rgb(packedcolour):
-    # cast float32 to int so that bitwise operations are possible    
-    s = struct.pack('>f' ,packedcolour)
-    i = struct.unpack('>l',s)[0]
-    # you can get back the float value by the inverse operations
-    pack = ctypes.c_uint32(i).value
-    r = (pack & 0x00FF0000)>> 16
-    g = (pack & 0x0000FF00)>> 8
-    b = (pack & 0x000000FF)
-    return r, g, b
 
-def checkwhite(rgb):
-    for i in rgb:
-        if i<180:
-            return False
-    return True
+def unpack_rgb(packed_color):
+    """Unpack RGB values from a packed float."""
+    rgb_array = np.zeros((packed_color.size, 3), dtype=np.uint8)
+    rgb_array[:, 0] = (packed_color >> 16) & 0xFF  # Red
+    rgb_array[:, 1] = (packed_color >> 8) & 0xFF   # Green
+    rgb_array[:, 2] = packed_color & 0xFF          # Blue
+    return rgb_array
+
+
+def is_white(rgb):
+    """Check if RGB values represent white."""
+    return np.all(rgb > 180)
 
 def filter_point_cloud(data):
-    # Create a list to store the filtered points
-    filtered_points = list()
+    # Convert PointCloud2 to numpy array
+    gen = pc2.read_points(data, field_names=("x", "y", "z", "rgb"), skip_nans=True)
+    points = np.array(list(gen), dtype=[('x', np.float32), ('y', np.float32), ('z', np.float32), ('rgb', np.float32)])
 
-    gen = pc2.read_points(data, skip_nans=True)
-    int_data = list(gen)
-    y_values = [point[1] for point in int_data]
-    y_threshold = max(y_values) * 0.6
-    y_threshold2 = min(y_values) * 0.8
+    # Calculate thresholds
+    y_threshold = np.max(points['y']) * 0.6
+    z_threshold = np.max(points['z']) * 0.9
 
-    z_values = [point[2] for point in int_data]
-    z_threshold = max(z_values) * 0.9
+    # Create mask for z threshold
+    z_mask = points['z'] < z_threshold
 
+    # Unpack RGB values
+    rgb_values = unpack_rgb(points['rgb'].view(np.uint32))
 
-    for i, x in enumerate(int_data):
-        xc = x[0]
-        yc = x[1]
-        zc = x[2] 
+    # Create white mask
+    white_mask = np.all(rgb_values > 180, axis=1)
 
-        newx = np.array(x)
-        # temp = -newx[1]
-        # newx[1] = -newx[2]
-        # newx[2] = temp
+    # Create y threshold mask
+    y_mask = points['y'] <= y_threshold
 
-        test = x[3] 
-        r,g,b = get_rgb(test)
-        
-        if zc<z_threshold:
-            if checkwhite([r,g,b]) or yc<=y_threshold:
-                newartificialx = newx
-                newartificialx[1] = newartificialx[1]
-                filtered_points.append(newartificialx)
-                # for i in np.arange(y_threshold2,y_threshold,1):
-                #     # artificialx = [xc,i,zc]
-                #     # newartificialx = [xc,-zc,-i]
-                #     newartificialx = newx
-                #     newartificialx[2] = -i    
-                #     filtered_points.append(newartificialx)
-                pass
-            else:
-                newartificialx = newx
-                newartificialx[1] = newartificialx[1]-200
-                filtered_points.append(newartificialx)
-            
-        # if yc <= y_threshold:
-        #     filtered_points.append(newx)
-    
+    # Combine masks
+    final_mask = z_mask & (white_mask | y_mask)
+
+    # Apply mask to points
+    filtered_points = points[final_mask].copy()
+
+    # Adjust y values for non-white points
+    non_white_mask = ~white_mask[final_mask]
+    filtered_points['y'][non_white_mask] -= 200
+
     # Create a new PointCloud2 message for the filtered points
     header = data.header
     fields = data.fields
     new_cloud = pc2.create_cloud(header, fields, filtered_points)
-    
 
     # Publish the filtered point cloud
     filtered_point_cloud_pub.publish(new_cloud)
 
-if __name__ == '__main__':
-    rospy.init_node('point_cloud_rotated')
+
+if __name__ == "__main__":
+    rospy.init_node('filternode')
 
     # Subscribe to the input PointCloud2 topic
     point_cloud_sub = rospy.Subscriber('/zed2i/zed_node/point_cloud/cloud_registered', PointCloud2, filter_point_cloud)
 
     # Create a publisher for the filtered PointCloud2 topic
-    filtered_point_cloud_pub = rospy.Publisher('/altered_point_cloud', PointCloud2, queue_size=10)
+    filtered_point_cloud_pub = rospy.Publisher('/altered_point_cloud', PointCloud2, queue_size=1)
 
     rospy.spin()
-
