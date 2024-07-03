@@ -1,0 +1,24 @@
+<launch>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf1" args="0 0 0 0 0 0 base_link imu" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf2" args="0 0 0 0 0 0 base_link world" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf3" args="0 0 0 0 0 0 odom base_link" />
+
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node">
+
+    <node pkg="navigation" type="gps" name="gps_redirect"/>
+
+    <param name="publish_filtered_gps" value="true"/>
+    <remap from="/imu/data" to="/imu" />
+    <remap from="/gps/fix" to="/gps/fix" />
+    <remap from="/odometry/filtered" to="/odom"/>
+  </node>
+
+  <node pkg="navigation" type="map_node" name="local_map_gen"/>
+  
+  <node pkg="filter_pc" type="filter" name="pointcloudhandler"/>
+
+  <include file="$(find mapping2)/launch/octomaplauncher.launch"/>
+
+  <node pkg="rviz" type="rviz" name="rviz"/>
+
+</launch>
