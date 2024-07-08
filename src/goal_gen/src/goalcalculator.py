@@ -26,6 +26,9 @@ class MapSearcher:
         self.bot_position = None
         self.bot_orientation = None
 
+        self.visited_areas = set()
+        self.min_goal_distance = 2.0  # Minimum distance (in meters) for a new goal
+
     def map_callback(self, map_msg):
         self.map = map_msg
 
@@ -64,9 +67,11 @@ class MapSearcher:
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         
         search_radius = int(10 / self.map.info.resolution)
+        best_goal = None
+        best_score = float('-inf')
         
-        for r in range(search_radius, search_radius + 1):  # Only search at exactly 10 units away
-            for theta in np.linspace(-math.pi/4, math.pi/4, 20):  # Search in a 90-degree arc in front
+        for r in range(search_radius - 2, search_radius + 3):  # Search in a range around 10 units
+            for theta in np.linspace(-math.pi/4, math.pi/4, 20):  # 90-degree arc
                 dx = int(r * math.cos(self.bot_orientation + theta))
                 dy = int(r * math.sin(self.bot_orientation + theta))
                 
@@ -75,14 +80,48 @@ class MapSearcher:
                 
                 if 0 <= x < self.map.info.width and 0 <= y < self.map.info.height:
                     if map_array[y, x] == 0 and self.is_path_clear(self.bot_position, (x, y)):
-                        block_x = x * self.map.info.resolution + self.map.info.origin.position.x
-                        block_y = y * self.map.info.resolution + self.map.info.origin.position.y
-                        rospy.loginfo(f"Found clear block at map coordinates: ({block_x}, {block_y})")
-                        self.publish_marker(block_x, block_y)
-                        self.publish_goal(block_x, block_y)
-                        return
+                        goal_x = x * self.map.info.resolution + self.map.info.origin.position.x
+                        goal_y = y * self.map.info.resolution + self.map.info.origin.position.y
+                        
+                        # Score the potential goal
+                        score = self.score_goal(goal_x, goal_y)
+                        
+                        if score > best_score:
+                            best_score = score
+                            best_goal = (goal_x, goal_y)
 
-        rospy.loginfo("No clear block found within 10 units in the forward direction")
+        if best_goal:
+            self.publish_marker(*best_goal)
+            self.publish_goal(*best_goal)
+            self.visited_areas.add((int(best_goal[0]), int(best_goal[1])))
+        else:
+            rospy.loginfo("No suitable goal found")
+
+    def score_goal(self, x, y):
+        # Higher score is better
+        score = 0
+        
+        # Prefer goals that are farther from visited areas
+        for visited_x, visited_y in self.visited_areas:
+            distance = math.sqrt((x - visited_x)**2 + (y - visited_y)**2)
+            score += min(distance, 5.0)  # Cap the benefit at 5 meters
+        
+        # Prefer goals that are more in front of the robot
+        dx = x - self.bot_position[0] * self.map.info.resolution - self.map.info.origin.position.x
+        dy = y - self.bot_position[1] * self.map.info.resolution - self.map.info.origin.position.y
+        angle_to_goal = math.atan2(dy, dx)
+        angle_diff = abs(self.normalize_angle(angle_to_goal - self.bot_orientation))
+        forward_preference = math.cos(angle_diff)  # 1.0 for directly ahead, 0.0 for sideways, -1.0 for behind
+        score += forward_preference * 10  # Weight this factor
+
+        return score
+
+    def normalize_angle(self, angle):
+        while angle > math.pi:
+            angle -= 2 * math.pi
+        while angle < -math.pi:
+            angle += 2 * math.pi
+        return angle
 
     def is_path_clear(self, start, end):
         x0, y0 = start
@@ -132,6 +171,15 @@ class MapSearcher:
         self.marker_pub.publish(marker)
 
     def publish_goal(self, x, y):
+        # Check if the new goal is far enough from the current position
+        current_x = self.bot_position[0] * self.map.info.resolution + self.map.info.origin.position.x
+        current_y = self.bot_position[1] * self.map.info.resolution + self.map.info.origin.position.y
+        distance_to_goal = math.sqrt((x - current_x)**2 + (y - current_y)**2)
+        
+        if distance_to_goal < self.min_goal_distance:
+            rospy.loginfo(f"New goal too close to current position. Distance: {distance_to_goal}")
+            return
+
         goal = PoseStamped()
         goal.header.frame_id = "map"
         goal.header.stamp = rospy.Time.now()
