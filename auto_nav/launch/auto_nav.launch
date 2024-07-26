@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+  <master auto="start"/>
+
+  <!--- Run Rviz -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_nav)/rviz/map.rviz"/> -->
+
+  <!--- Run AMCL -->
+  <!--- We load ACML here with diff=true to support our differential drive robot -->
+  <include file="$(find amcl)/examples/amcl_diff.launch" />
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <remap from="/map" to="//projected_map"/>
+    <rosparam file="$(find auto_nav)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find auto_nav)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find auto_nav)/params/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find auto_nav)/params/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find auto_nav)/params/base_local_planner_params.yaml" command="load" />
+
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <param name="controller_frequency" value="10.0" />
+
+  </node>
+</launch>
