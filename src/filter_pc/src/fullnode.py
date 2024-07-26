@@ -48,8 +48,8 @@ def filter_point_cloud(data):
     filtered_points = points[final_mask].copy()
 
     # Adjust y values for non-white points
-    non_white_mask = ~white_mask[final_mask]
-    filtered_points['y'][non_white_mask] -= 200
+    # non_white_mask = ~white_mask[final_mask]
+    # filtered_points[non_white_mask]
 
     # Create a new PointCloud2 message for the filtered points
     header = data.header

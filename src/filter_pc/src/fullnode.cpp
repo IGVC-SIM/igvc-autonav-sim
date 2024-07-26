@@ -8,7 +8,7 @@
 ros::Publisher filtered_point_cloud_pub;
 
 bool checkWhite(uint8_t r, uint8_t g, uint8_t b) {
-    return r >= 180 && g >= 180 && b >= 180;
+    return r >= 100 && g >= 100 && b >= 100;
 }
 
 void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
@@ -48,7 +48,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
                 filteredCloud.push_back(point);
             } else {
                 pcl::PointXYZRGB newPoint = point;
-                newPoint.y -= 200.0f;
+                newPoint.y -= 40.0f;
                 filteredCloud.push_back(newPoint);
             }
         }
@@ -67,8 +67,8 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "point_cloud_rotated");
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = nh.subscribe("/zed2i/zed_node/point_cloud/cloud_registered", 1, filterPointCloud);
-    filtered_point_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/altered_point_cloud", 10);
+    ros::Subscriber sub = nh.subscribe("/zed2i/zed_node/point_cloud/cloud_registered", 100, filterPointCloud);
+    filtered_point_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/altered_point_cloud", 100);
 
     ros::spin();
     return 0;
