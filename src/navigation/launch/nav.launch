@@ -25,7 +25,7 @@
 
   <!-- <node pkg="navigation" type="map_node" name="local_map_gen"/>  -->
   
-  <node pkg="filter_pc" type="filter" name="pointcloudhandler"/>
+  <node pkg="filter_pc" type="fullnode.py" name="pointcloudhandler"/>
 
   <!-- <remap from = "/move_base/local_costmap/costmap" to="map"/> -->
   
