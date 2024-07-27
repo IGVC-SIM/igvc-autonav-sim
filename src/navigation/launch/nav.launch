@@ -1,43 +1,24 @@
 <launch>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf1" args="0 0 0 0 0 0 base_link imu" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf1" args="0 0 0 0 0 0 base_link imu" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf2" args="0 0 0 0 0 0 base_link world" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf3" args="0 0 0 0 0 0 odom base_link" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_tf3" args="0 0 0 0 0 0 odom base_link" /> -->
 
-       
-    <node pkg="navigation" type="gps" name="gps_redirect"/>
-    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node"/>
- 
-    
-    <param name="publish_filtered_gps" value="true"/>
-    <remap from="/imu/data" to="/imu" />
-    <remap from="/gps/fix" to="/gps/fix" />
-    <remap from="/odometry/filtered" to="/odom"/>
-  </node>
-  
-  <node name="Localizer" pkg="amcl" type="amcl" output="screen">
-    <param name="use_map_topic" value="true"/>
-    <param name="odom_frame_id" value="odom"/>
-    <param name="base_frame_id" value="base_link"/>
-    <param name="global_frame_id" value="map"/>
-    <param name="scan_topic" value="scan"/>
-  </node>
-  <!-- <node pkg="navigation" type="goal_node" name="goal_gen"/> -->
+    <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node">
+      <param name="publish_filtered_gps" value="true"/>
+      <remap from="/imu/data" to="/imu"/>
+      <remap from="/gps/fix" to="/gps/fix"/>
+      <remap from="/odometry/filtered" to="/odom"/>
+    </node>
 
-  <!-- <node pkg="navigation" type="map_node" name="local_map_gen"/>  -->
+    <!-- <node pkg="navigation" type="gps" name="gps_redirect"/> -->
   
-  <node pkg="filter_pc" type="fullnode.py" name="pointcloudhandler"/>
+  <node pkg="filter_pc" type="filter" name="pointcloudhandler"/>
 
-  <!-- <remap from = "/move_base/local_costmap/costmap" to="map"/> -->
-  
   <include file="$(find mapping2)/launch/octomaplauncher.launch"/>
 
-  <include file="$(find navigation)/launch/move_base_launch.launch"/>
-  
+  <!-- <node pkg="goal_gen" type="goalcalculator.py" name="goalgenerator"/> -->
 
-  
-  <!-- <node pkg="dwa_planner" type="dwa_planner" name="controller"/> -->
-  <!-- <include file="$(find mapnode)/launch/move_base.launch"/> -->
-  <node pkg="rviz" type="rviz" name="rviz"/>
+
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_nav)/rviz/map.rviz"/> -->
 
 </launch>
-<!-- The origin for the sensor at (-10.00, -20.15, 1.52) is out of map bounds. So, the costmap cannot raytrace for it. -->

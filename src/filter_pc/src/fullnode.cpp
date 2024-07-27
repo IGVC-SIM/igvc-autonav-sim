@@ -4,11 +4,11 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
-
+#include <iostream>
 ros::Publisher filtered_point_cloud_pub;
 
 bool checkWhite(uint8_t r, uint8_t g, uint8_t b) {
-    return r >= 100 && g >= 100 && b >= 100;
+    return (r >= 180 && g >= 180 && b >= 180);
 }
 
 void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
@@ -22,7 +22,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
     float y_max = -std::numeric_limits<float>::max();
     float y_min = std::numeric_limits<float>::max();
     float z_max = -std::numeric_limits<float>::max();
-    
+ 
     for (const auto& point : cloud.points) {
         if (!std::isnan(point.y)) {
             if (point.y > y_max) y_max = point.y;
@@ -44,12 +44,12 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
         uint8_t b = point.b;
 
         if (point.z < z_threshold) {
-            if (checkWhite(r, g, b) || point.y <= y_threshold) {
+            if (checkWhite(r, g, b))  {
                 filteredCloud.push_back(point);
             } else {
-                pcl::PointXYZRGB newPoint = point;
-                newPoint.y -= 40.0f;
-                filteredCloud.push_back(newPoint);
+                // pcl::PointXYZRGB newPoint = point;
+                // newPoint.y -= 200;
+                // filteredCloud.push_back(newPoint);
             }
         }
     }

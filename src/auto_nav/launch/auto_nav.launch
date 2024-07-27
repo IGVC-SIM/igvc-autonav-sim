@@ -10,7 +10,7 @@
   <include file="$(find amcl)/examples/amcl_diff.launch" />
 
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <remap from="/map" to="//projected_map"/>
+    <remap from="/map" to="/projected_map"/>
     <rosparam file="$(find auto_nav)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find auto_nav)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
     <rosparam file="$(find auto_nav)/params/local_costmap_params.yaml" command="load" />
