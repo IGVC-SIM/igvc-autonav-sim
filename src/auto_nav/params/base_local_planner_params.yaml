@@ -7,7 +7,7 @@ TebLocalPlannerROS:
   dt_ref: 0.3
   dt_hysteresis: 0.1
   global_plan_overwrite_orientation: True
-  max_global_plan_lookahead_dist: 3.0
+  max_global_plan_lookahead_dist: 8.0
   feasibility_check_no_poses: 5
     
   # Robot
@@ -16,11 +16,11 @@ TebLocalPlannerROS:
   max_vel_theta: 0.3
   acc_lim_x: 0.5
   acc_lim_theta: 0.5
-  min_turning_radius: 0.0 # diff-drive robot (can turn on spot)
+  min_turning_radius: 0.7 # diff-drive robot (can turn on spot)
 
   footprint_model:
     type: "polygon"
-    vertices: [[0.3, 0.3], [0.3, -0.4], [-0.4, -0.4], [-0.3, 0.3]]
+    vertices: [[1.0, 1.0], [1.0, -1.0], [-1.0, -1.0], [-1.0, 1.0]]
 
   # GoalTolerance    
   xy_goal_tolerance: 0.2
@@ -28,9 +28,10 @@ TebLocalPlannerROS:
   free_goal_vel: False
     
   # Obstacles    
-  min_obstacle_dist: 0.27 # This value must be larger than the robot radius
+  min_obstacle_dist: 1.5 # This value must be larger than the robot radius
+  inflation_dist: 1.5
   include_costmap_obstacles: True
-  costmap_obstacles_behind_robot_dist: 1.0
+  costmap_obstacles_behind_robot_dist: 1.5
   obstacle_poses_affected: 30
   costmap_converter_plugin: ""
   costmap_converter_spin_thread: True
@@ -46,20 +47,20 @@ TebLocalPlannerROS:
   weight_max_vel_theta: 1
   weight_acc_lim_x: 1
   weight_acc_lim_theta: 1
-  weight_kinematics_nh: 1000
-  weight_kinematics_forward_drive: 1000
-  weight_kinematics_turning_radius: 1
+  weight_kinematics_nh: 2
+  weight_kinematics_forward_drive: 50.0
+  weight_kinematics_turning_radius: 0.1
   weight_optimaltime: 1
-  weight_obstacle: 50
-  weight_dynamic_obstacle: 10 # not in use yet
+  weight_obstacle: 100.0
+  weight_dynamic_obstacle: 100.0 # not in use yet
   alternative_time_cost: False # not in use yet
 
   # Homotopy Class Planner
   enable_homotopy_class_planning: True
   enable_multithreading: True
   simple_exploration: False
-  max_number_classes: 4
-  selection_cost_hysteresis: 1.0
+  max_number_classes: 8
+  selection_cost_hysteresis: 1.5
   selection_obst_cost_scale: 1.0
   selection_alternative_time_cost: False
   
