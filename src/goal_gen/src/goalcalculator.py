@@ -29,6 +29,9 @@ class MapSearcher:
         self.visited_areas = set()
         self.min_goal_distance = 2.0  # Minimum distance (in meters) for a new goal
 
+        # Create a timer that calls the search_and_publish method every 5 seconds
+        self.timer = rospy.Timer(rospy.Duration(5), self.search_and_publish)
+
     def map_callback(self, map_msg):
         self.map = map_msg
 
@@ -53,25 +56,37 @@ class MapSearcher:
             _, _, yaw = self.euler_from_quaternion(orientation.x, orientation.y, orientation.z, orientation.w)
             self.bot_orientation = yaw
             
-            rospy.loginfo(f"Bot position in map: {self.bot_position}, orientation: {self.bot_orientation}")
-            
-            self.search_block()
+            # Remove the continuous search_block call
+            # self.search_block()
         
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
             rospy.logerr(f"TF Error: {e}")
 
-    def search_block(self):
+    def search_and_publish(self, event):
         if self.bot_position is None or self.map is None or self.bot_orientation is None:
+            rospy.loginfo("Not enough information to search and publish yet.")
             return
 
+        rospy.loginfo("Searching for block and publishing goal...")
+        best_goal = self.search_block()
+        
+        if best_goal:
+            self.publish_marker(*best_goal)
+            self.publish_goal(*best_goal)
+            self.visited_areas.add((int(best_goal[0]), int(best_goal[1])))
+            rospy.loginfo(f"Published new goal: {best_goal}")
+        else:
+            rospy.loginfo("No suitable goal found in this iteration.")
+
+    def search_block(self):
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         
         search_radius = int(10 / self.map.info.resolution)
         best_goal = None
         best_score = float('-inf')
         
-        for r in range(search_radius - 2, search_radius + 3):  # Search in a range around 10 units
-            for theta in np.linspace(-math.pi/4, math.pi/4, 20):  # 90-degree arc
+        for r in range(search_radius + 3, search_radius - 3, -1):  # Search in a range around 10 units
+            for theta in np.linspace(-math.pi/2, math.pi/2, 20):  # 90-degree arc
                 dx = int(r * math.cos(self.bot_orientation + theta))
                 dy = int(r * math.sin(self.bot_orientation + theta))
                 
@@ -90,12 +105,7 @@ class MapSearcher:
                             best_score = score
                             best_goal = (goal_x, goal_y)
 
-        if best_goal:
-            self.publish_marker(*best_goal)
-            self.publish_goal(*best_goal)
-            self.visited_areas.add((int(best_goal[0]), int(best_goal[1])))
-        else:
-            rospy.loginfo("No suitable goal found")
+        return best_goal
 
     def score_goal(self, x, y):
         # Higher score is better
@@ -104,14 +114,14 @@ class MapSearcher:
         # Prefer goals that are farther from visited areas
         for visited_x, visited_y in self.visited_areas:
             distance = math.sqrt((x - visited_x)**2 + (y - visited_y)**2)
-            score += min(distance, 5.0)  # Cap the benefit at 5 meters
+            score += min(distance, 1.0)  # Cap the benefit at 5 meters
         
         # Prefer goals that are more in front of the robot
         dx = x - self.bot_position[0] * self.map.info.resolution - self.map.info.origin.position.x
         dy = y - self.bot_position[1] * self.map.info.resolution - self.map.info.origin.position.y
         angle_to_goal = math.atan2(dy, dx)
         angle_diff = abs(self.normalize_angle(angle_to_goal - self.bot_orientation))
-        forward_preference = math.cos(angle_diff)  # 1.0 for directly ahead, 0.0 for sideways, -1.0 for behind
+        forward_preference = math.cos(abs(abs(angle_diff)-(math.pi/3)))  # 1.0 for directly ahead, 0.0 for sideways, -1.0 for behind
         score += forward_preference * 10  # Weight this factor
 
         return score

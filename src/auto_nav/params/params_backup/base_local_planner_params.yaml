@@ -8,12 +8,12 @@ TebLocalPlannerROS:
   dt_hysteresis: 0.05
   global_plan_overwrite_orientation: True
   max_global_plan_lookahead_dist: 20.0
-  feasibility_check_no_poses: 100
+  feasibility_check_no_poses: 20
     
   # Robot
   max_vel_x: 0.4
   max_vel_x_backwards: 0.2
-  max_vel_theta: 0.2
+  max_vel_theta: 0.3
   acc_lim_x: 0.5
   acc_lim_theta: 0.1
   min_turning_radius: 0 # diff-drive robot (can turn on spot)
@@ -24,7 +24,7 @@ TebLocalPlannerROS:
 
   # GoalTolerance    
   xy_goal_tolerance: 0.2
-  yaw_goal_tolerance: 1
+  yaw_goal_tolerance: 0.1
   free_goal_vel: False
     
   # Obstacles    
