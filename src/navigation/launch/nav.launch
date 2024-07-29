@@ -16,7 +16,7 @@
 
   <include file="$(find mapping2)/launch/octomaplauncher.launch"/>
 
-  <node pkg="goal_gen" type="goalcalculator.py" name="map_searcher"/>
+  <!-- <node pkg="goal_gen" type="goalcalculator2.py" name="map_searcher"/> -->
 
 
   <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_nav)/rviz/map.rviz"/> -->

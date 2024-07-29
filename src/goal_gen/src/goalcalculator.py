@@ -28,9 +28,10 @@ class MapSearcher:
 
         self.visited_areas = set()
         self.min_goal_distance = 2.0  # Minimum distance (in meters) for a new goal
+        self.last_goal = None  # Store the last calculated goal
 
         # Create a timer that calls the search_and_publish method every 5 seconds
-        self.timer = rospy.Timer(rospy.Duration(5), self.search_and_publish)
+        self.timer = rospy.Timer(rospy.Duration(3), self.search_and_publish)
 
     def map_callback(self, map_msg):
         self.map = map_msg
@@ -62,30 +63,41 @@ class MapSearcher:
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
             rospy.logerr(f"TF Error: {e}")
 
+    
     def search_and_publish(self, event):
         if self.bot_position is None or self.map is None or self.bot_orientation is None:
             rospy.loginfo("Not enough information to search and publish yet.")
             return
 
         rospy.loginfo("Searching for block and publishing goal...")
-        best_goal = self.search_block()
+        new_goal = self.search_block()
         
-        if best_goal:
-            self.publish_marker(*best_goal)
-            self.publish_goal(*best_goal)
-            self.visited_areas.add((int(best_goal[0]), int(best_goal[1])))
-            rospy.loginfo(f"Published new goal: {best_goal}")
+        if new_goal:
+            self.last_goal = new_goal
+            rospy.loginfo(f"New goal found: {new_goal}")
+        elif self.last_goal:
+            rospy.loginfo(f"No new goal found. Using last goal: {self.last_goal}")
         else:
-            rospy.loginfo("No suitable goal found in this iteration.")
+            rospy.loginfo("No goal available to publish.")
+            return
+
+        goal_to_publish = self.last_goal
+        self.publish_marker(*goal_to_publish)
+        self.publish_goal(*goal_to_publish)
+        self.visited_areas.add((int(goal_to_publish[0]), int(goal_to_publish[1])))
+        rospy.loginfo(f"Published goal: {goal_to_publish}")
 
     def search_block(self):
+        if self.map is None:
+            return None
+
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         
-        search_radius = int(10 / self.map.info.resolution)
+        search_radius = int(5 / self.map.info.resolution)
         best_goal = None
         best_score = float('-inf')
         
-        for r in range(search_radius + 3, search_radius - 3, -1):  # Search in a range around 10 units
+        for r in range(search_radius + 8, search_radius - 3, -1):  # Search in a range around 10 units
             for theta in np.linspace(-math.pi/2, math.pi/2, 20):  # 90-degree arc
                 dx = int(r * math.cos(self.bot_orientation + theta))
                 dy = int(r * math.sin(self.bot_orientation + theta))

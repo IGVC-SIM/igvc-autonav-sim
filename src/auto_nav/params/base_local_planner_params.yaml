@@ -74,4 +74,3 @@ TebLocalPlannerROS:
 
   cost_scaling_factor: 10.0  # Increase for stronger repulsion from obstacles
   weight_viapoint: 1.0
-

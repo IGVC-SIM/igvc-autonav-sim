@@ -11,7 +11,6 @@ Panels:
         - /Path2
         - /Pose1
         - /Marker1
-        - /Marker1/Status1
       Splitter Ratio: 0.5
     Tree Height: 355
   - Class: rviz/Selection
@@ -126,11 +125,11 @@ Visualization Manager:
       Color: 255; 25; 0
       Enabled: true
       Head Length: 1
-      Head Radius: 1
+      Head Radius: 0.30000001192092896
       Name: Pose
       Queue Size: 10
-      Shaft Length: 3
-      Shaft Radius: 5
+      Shaft Length: 1
+      Shaft Radius: 0.20000000298023224
       Shape: Arrow
       Topic: /move_base_simple/goal
       Unreliable: false
@@ -274,7 +273,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 56.278228759765625
+      Distance: 52.449951171875
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -282,17 +281,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -1.0740509033203125
-        Y: -13.510152816772461
-        Z: 0.002635955810546875
+        X: -4.021903991699219
+        Y: -12.455108642578125
+        Z: -0.0075473785400390625
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.3915657699108124
+      Pitch: 0.30142033100128174
       Target Frame: <Fixed Frame>
-      Yaw: 4.5031585693359375
+      Yaw: 6.075235843658447
     Saved:
       - Class: rviz/Orbit
         Distance: 52.40496063232422
@@ -353,4 +352,4 @@ Window Geometry:
     collapsed: false
   Width: 1200
   X: 616
-  Y: 282
+  Y: 162
