@@ -153,41 +153,42 @@ class MapSearcher:
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
         set1, set2 = self.cluster_points_in_grid(map_array)
-        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 3.2/self.map.info.resolution, 8/self.map.info.resolution)
+        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 3/self.map.info.resolution, 6/self.map.info.resolution)
         can_publish = False
-        if len(self.previous_goals)==0:
-            desired_point = (self.bot_position[0]+4, self.bot_position[1])
-            can_publish = True
-        else:
-            for midpoint in midpoints:
-                # print(midpoint)
-                value = map_array[int(midpoint[1]),int(midpoint[0])]
-                if value == 0:
-                    x, y = midpoint
-                    bot_x = self.bot_position[0] * self.map.info.resolution + self.map.info.origin.position.x
-                    bot_y = self.bot_position[1] * self.map.info.resolution + self.map.info.origin.position.y
-                    goal_x = x * self.map.info.resolution + self.map.info.origin.position.x
-                    goal_y = y * self.map.info.resolution + self.map.info.origin.position.y
-                    distance_bot_current_goal = math.sqrt((goal_x - bot_x)**2 + (goal_y - bot_y)**2)
-                    can_publish = True
-                    for prevgoal in self.previous_goals[:-1]:
-                        prevx, prevy = prevgoal
-                        distance_prev_current_goal = math.sqrt((prevx-goal_x)**2 + (prevy-goal_y)**2)
-                        if distance_bot_current_goal > distance_prev_current_goal:
-                            can_publish = False
-                    if can_publish is True:
-                        desired_point = midpoint
-                        break
+        # if len(self.previous_goals)==0:
+        #     desired_point = (self.bot_position[0]+4, self.bot_position[1])
+        #     can_publish = True
+        # else:
+        for midpoint in midpoints:
+            # print(midpoint)
+            value = map_array[int(midpoint[1]),int(midpoint[0])]
+            if value == 0:
+                x, y = midpoint
+                bot_x = self.bot_position[0] * self.map.info.resolution + self.map.info.origin.position.x
+                bot_y = self.bot_position[1] * self.map.info.resolution + self.map.info.origin.position.y
+                goal_x = x * self.map.info.resolution + self.map.info.origin.position.x
+                goal_y = y * self.map.info.resolution + self.map.info.origin.position.y
+                distance_bot_current_goal = math.sqrt((goal_x - bot_x)**2 + (goal_y - bot_y)**2)
+                can_publish = True
+                for prevgoal in self.previous_goals[:-1]:
+                    prevx, prevy = prevgoal
+                    distance_prev_current_goal = math.sqrt((prevx-goal_x)**2 + (prevy-goal_y)**2)
+                    if distance_bot_current_goal > distance_prev_current_goal:
+                        print("Distance of bot from current goal is greater than distance between current goal and one of previous goals.")
+                        can_publish = False
+                if can_publish is True:
+                    desired_point = midpoint
+                    break
         if can_publish == True:
             print("Map array goal: ", desired_point)
             x, y = desired_point[1], desired_point[0]
-            if 0 <= x < self.map.info.width and 0 <= y < self.map.info.height:
-                x, y = desired_point[0], desired_point[1]
-                goal_x = x * self.map.info.resolution + self.map.info.origin.position.x
-                goal_y = y * self.map.info.resolution + self.map.info.origin.position.y
-                print("Goal: ",goal_x, goal_y)
-                self.publish_marker(goal_x,goal_y)
-                self.publish_goal(goal_x, goal_y)
+            # if 0 <= x < self.map.info.width and 0 <= y < self.map.info.height:
+            x, y = desired_point[0], desired_point[1]
+            goal_x = x * self.map.info.resolution + self.map.info.origin.position.x
+            goal_y = y * self.map.info.resolution + self.map.info.origin.position.y
+            print("Goal: ",goal_x, goal_y)
+            self.publish_marker(goal_x,goal_y)
+            self.publish_goal(goal_x, goal_y)
 
         
     def publish_marker(self, x, y):
@@ -235,14 +236,14 @@ class MapSearcher:
         if len(self.previous_goals)>0:
             distance = math.sqrt((x-self.previous_goals[-1][0])**2 +(y-self.previous_goals[-1][1])**2)
         else:
-            distance = 6
+            distance = 3
 
-        if distance>5:
-            self.goal_pub.publish(goal)
-            rospy.loginfo(f"Published goal: {goal}")
+        # if distance>=3:
+        self.goal_pub.publish(goal)
+        rospy.loginfo(f"Published goal: {goal}")
         
 
-        if distance>=3.2:
+        if distance>=3:
             self.previous_goals.append((x,y))
 
 
