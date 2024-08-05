@@ -23,7 +23,7 @@ class MapSearcher:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         
-        self.map_sub = rospy.Subscriber('/projected_map', OccupancyGrid, self.map_callback)
+        self.map_sub = rospy.Subscriber('/filtered_map', OccupancyGrid, self.map_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         
         self.marker_pub = rospy.Publisher('/found_block', Marker, queue_size=10)
@@ -129,18 +129,23 @@ class MapSearcher:
         for i, (dist, idx) in enumerate(zip(distances2, indices2)):
             pairs.append((set1[i], set2[idx], dist))
 
-        # Calculate midpoints
+        # Calculate midpoints and their distances to all points
         midpoints = []
         for p1, p2, _ in pairs:
             midpoint = (p1 + p2) / 2
             distance_to_reference = np.linalg.norm(midpoint - reference_point)
             if min_distance <= distance_to_reference <= max_distance:
-                midpoints.append((midpoint, distance_to_reference))
+                # Calculate minimum distance to any point in set1 or set2
+                min_distance_to_points = min(
+                    np.min(np.linalg.norm(set1 - midpoint, axis=1)),
+                    np.min(np.linalg.norm(set2 - midpoint, axis=1))
+                )
+                midpoints.append((midpoint, min_distance_to_points))
 
-        # Sort midpoints by distance to reference point
+        # Sort midpoints by minimum distance to any point (in descending order)
         midpoints.sort(key=lambda x: x[1], reverse=True)
 
-        # Return only the sorted midpoints within the specified range as an array of (x,y) tuples
+        # Return only the sorted midpoints as an array of (x,y) tuples
         return np.array([(m[0][0], m[0][1]) for m in midpoints])
 
 
@@ -153,7 +158,7 @@ class MapSearcher:
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
         set1, set2 = self.cluster_points_in_grid(map_array)
-        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 3/self.map.info.resolution, 6/self.map.info.resolution)
+        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 4/self.map.info.resolution, 8/self.map.info.resolution)
         can_publish = False
         # if len(self.previous_goals)==0:
         #     desired_point = (self.bot_position[0]+4, self.bot_position[1])
@@ -236,14 +241,14 @@ class MapSearcher:
         if len(self.previous_goals)>0:
             distance = math.sqrt((x-self.previous_goals[-1][0])**2 +(y-self.previous_goals[-1][1])**2)
         else:
-            distance = 3
+            distance = 4.1
 
-        # if distance>=3:
+        # if distance>=4.1:
         self.goal_pub.publish(goal)
         rospy.loginfo(f"Published goal: {goal}")
         
 
-        if distance>=3:
+        if distance>=4.1:
             self.previous_goals.append((x,y))
 
 
