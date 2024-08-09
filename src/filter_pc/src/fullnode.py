@@ -36,7 +36,7 @@ def filter_point_cloud(data):
     rgb_values = unpack_rgb(points['rgb'].view(np.uint32))
 
     # Create white mask
-    white_mask = np.all(rgb_values > 180, axis=1)
+    white_mask = np.all(rgb_values > 100, axis=1)
 
     # Create y threshold mask
     y_mask = points['y'] <= y_threshold
@@ -48,8 +48,8 @@ def filter_point_cloud(data):
     filtered_points = points[final_mask].copy()
 
     # Adjust y values for non-white points
-    # non_white_mask = ~white_mask[final_mask]
-    # filtered_points[non_white_mask]
+    non_white_mask = ~white_mask[final_mask]
+    filtered_points[non_white_mask]
 
     # Create a new PointCloud2 message for the filtered points
     header = data.header

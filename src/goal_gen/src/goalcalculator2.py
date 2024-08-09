@@ -23,7 +23,7 @@ class MapSearcher:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         
-        self.map_sub = rospy.Subscriber('/filtered_map', OccupancyGrid, self.map_callback)
+        self.map_sub = rospy.Subscriber('/projected_map', OccupancyGrid, self.map_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
         
         self.marker_pub = rospy.Publisher('/found_block', Marker, queue_size=10)
@@ -158,7 +158,7 @@ class MapSearcher:
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
         set1, set2 = self.cluster_points_in_grid(map_array)
-        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 4/self.map.info.resolution, 8/self.map.info.resolution)
+        midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 4/self.map.info.resolution, 6/self.map.info.resolution)
         can_publish = False
         # if len(self.previous_goals)==0:
         #     desired_point = (self.bot_position[0]+4, self.bot_position[1])

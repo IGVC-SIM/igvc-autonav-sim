@@ -1,0 +1,175 @@
+# DWAPlannerROS:
+#   odom_topic: odom
+#   map_frame: map
+    
+#   # Trajectory
+#   # teb_autosize: True
+#   # dt_ref: 0.1
+#   # dt_hysteresis: 0.03
+#   global_plan_overwrite_orientation: True
+#   max_global_plan_lookahead_dist: 12.0
+#   feasibility_check_no_poses: 150
+    
+#   # Robot
+#   max_vel_x: 0.2
+#   max_vel_x_backwards: 0.2
+#   max_vel_theta: 0.2
+#   acc_lim_x: 0.1
+#   acc_lim_theta: 0.1
+#   min_turning_radius: 0 # diff-drive robot (can turn on spot)
+
+#   footprint_model:
+#     type: "polygon"
+#     vertices: [[0.315, 0.425], [0.315, -0.425], [-0.315, -0.425], [-0.315, 0.425]]
+
+#   # GoalTolerance    
+#   xy_goal_tolerance: 0.2
+#   yaw_goal_tolerance: 1
+#   free_goal_vel: False
+    
+#   # Obstacles    
+#   min_obstacle_dist: 0.1
+#   inflation_dist: 0.1
+#   include_costmap_obstacles: True
+#   # costmap_obstacles_behind_robot_dist: 1.5
+#   # obstacle_poses_affected: 30
+#   # costmap_converter_plugin: ""
+#   # costmap_converter_spin_thread: True
+#   # costmap_converter_rate: 5
+
+#   # Optimization    
+#   no_inner_iterations: 5
+#   no_outer_iterations: 4
+#   optimization_activate: True
+#   optimization_verbose: False
+#   penalty_epsilon: 0.1
+#   weight_max_vel_x: 0.5
+#   weight_max_vel_theta: 0.3
+#   weight_acc_lim_x: 0.2
+#   weight_acc_lim_theta: 0.2
+#   weight_kinematics_nh: 100.0
+#   weight_kinematics_forward_drive: 25.0
+#   weight_kinematics_turning_radius: 0
+#   weight_optimaltime: 1
+#   weight_obstacle: 100.0
+#   weight_dynamic_obstacle: 100.0 # not in use yet
+#   alternative_time_cost: False # not in use yet
+
+#   # Homotopy Class Planner
+#   enable_homotopy_class_planning: True
+#   enable_multithreading: True
+#   simple_exploration: False
+#   max_number_classes: 4
+#   selection_cost_hysteresis: 1.5
+#   selection_obst_cost_scale: 10.0
+#   selection_alternative_time_cost: False
+  
+#   roadmap_graph_no_samples: 15
+#   roadmap_graph_area_width: 5
+#   h_signature_prescaler: 0.5
+#   h_signature_threshold: 0.1
+#   obstacle_keypoint_offset: 0.1
+#   obstacle_heading_threshold: 0.45
+#   visualize_hc_graph: False
+
+#   cost_scaling_factor: 10.0  # Increase for stronger repulsion from obstacles
+#   weight_viapoint: 1.0
+
+#   sim_time: 2.0
+#   vx_samples: 30
+#   vy_samples: 0  # Zero for non-holonomic robots
+#   vth_samples: 60
+
+#   forward_point_distance: 10  # Adjust based on robot size and desired lookahead
+#   path_distance_bias: 100.0  # Higher values make the robot follow the path more closely
+#   goal_distance_bias: 20.0  # Higher values make the robot more focused on the goal
+#   occdist_scale: 10   # Increase to make obstacles 'cost' more
+
+DWAPlannerROS:
+  odom_topic: odom
+  map_frame: map
+# Robot Configuration Parameters
+  max_vel_trans: 2.0
+  min_vel_trans: -2.0
+
+  max_vel_x: 2.0  # Reduce if necessary
+  min_vel_x: -2.0
+
+  max_rot_vel:  2.0
+  min_rot_vel: -2.0
+  max_vel_theta:  2.0
+  min_vel_theta: -2.0
+  min_in_place_vel_theta: 0.3  # Minimum in-place angular velocity (rad/s)
+
+  acc_lim_x: 1.0
+  acc_lim_y: 1.0
+  acc_lim_theta: 1.0
+
+# Goal Tolerance Parameters
+  xy_goal_tolerance: 0.4  # Reduced from 1.5
+  yaw_goal_tolerance: 3.2 # Reduced from 1.57
+
+# Differential-drive robot configuration
+  holonomic_robot: false
+
+# Forward Simulation Parameters
+  sim_time: 5.0  # Reduced from 12.0
+  vx_samples: 80  # Reduced from 90
+  vth_samples: 80  # Reduced from 90
+  sim_granularity: 0.025  # Reduced from 0.1
+
+  # sim_granularity: 0.1
+
+  cost_scaling_factor: 5.0  # Reduced from 100.0  path_distance_bias: 80.0  # Increased from 60.0
+  occdist_scale: 150  # Increased from 100
+  forward_point_distance: 0.5
+  # goal_distance_bias: 0.1  # Higher values make the robot more focused on the goal
+  # path_distance_bias: 32.0  # Increase to favor following the global path more closely
+  recovery_behavior_enabled: true
+  
+  # clearing_rotation_allowed: true
+  # goal_distance_bias: 24.0  # Increase to favor getting closer to the goal
+  # occdist_scale: 0.02  # Increase to make the robot stay further from obstacles
+
+
+  # cost_scaling_factor: 3.0  # Increase for stronger repulsion from obstacles
+  # weight_viapoint: 1.0
+
+  # footprint_model:
+  #   type: "polygon"
+  #   vertices: [[0.315, 0.425], [0.315, -0.425], [-0.315, -0.425], [-0.315, 0.425]]
+
+# GlobalPlanner:
+#   use_dijkstra: true
+#   use_quadratic: true
+#   use_grid_path: false
+#   old_navfn_behavior: false
+#   lethal_cost: 253
+#   neutral_cost: 66
+#   cost_factor: 0.55
+# DWAPlannerROS:
+
+# # Robot Configuration Parameters
+#   max_vel_x: 0.4
+#   min_vel_x: 0.08
+
+#   max_vel_theta:  0.2
+#   min_vel_theta: -0.2
+#   min_in_place_vel_theta: 0.08
+
+#   acc_lim_x: 1.0
+#   acc_lim_y: 0.0
+#   acc_lim_theta: 0.6
+
+# # Goal Tolerance Parameters
+#   xy_goal_tolerance: 0.10
+#   yaw_goal_tolerance: 0.05
+
+# # Differential-drive robot configuration
+#   holonomic_robot: false
+
+# # Forward Simulation Parameters
+#   sim_time: 0.8
+#   vx_samples: 18
+#   vtheta_samples: 20
+  # sim_granularity: 0.05

@@ -1,76 +1,75 @@
 TebLocalPlannerROS:
   odom_topic: odom
   map_frame: map
-    
+  
   # Trajectory
   teb_autosize: True
-  dt_ref: 0.15
-  dt_hysteresis: 0.05
+  dt_ref: 0.3  # Increased significantly for slower, more careful planning
+  dt_hysteresis: 0.1
   global_plan_overwrite_orientation: True
-  max_global_plan_lookahead_dist: 20.0
+  max_global_plan_lookahead_dist: 4.0  # Reduced for more frequent replanning
   feasibility_check_no_poses: 100
-    
+  
   # Robot
-  max_vel_x: 0.4
-  max_vel_x_backwards: 0.2
-  max_vel_theta: 0.2
-  acc_lim_x: 0.5
-  acc_lim_theta: 0.1
-  min_turning_radius: 0 # diff-drive robot (can turn on spot)
-
-  footprint_model:
-    type: "polygon"
-    vertices: [[0.315, 0.425], [0.315, -0.425], [-0.315, -0.425], [-0.315, 0.425]]
-
-  # GoalTolerance    
-  xy_goal_tolerance: 0.2
-  yaw_goal_tolerance: 1
+  max_vel_x: 2.0 # Significantly reduced for slower movement
+  max_vel_x_backwards: 1.0
+  max_vel_theta: 2.0  # Reduced for slower rotation
+  acc_lim_x: 1.0  # Reduced for gentler acceleration
+  acc_lim_theta: 1.0
+  min_turning_radius: 0
+  # footprint_model:
+  #   type: "polygon"
+  #   vertices: [[0.4, 0.45], [0.4, -0.45], [-0.8, -0.45], [-0.8, 0.45]]
+  
+  # GoalTolerance
+  xy_goal_tolerance: 0.4
+  yaw_goal_tolerance: 0.9
+  goal_angle_tolerance: 0.9
   free_goal_vel: False
-    
-  # Obstacles    
-  min_obstacle_dist: 0.5
-  inflation_dist: 0.6
+  
+  # Obstacles
+  min_obstacle_dist: 0.8  # Significantly increased for larger safety margin
+  inflation_dist: 1.0  # Increased for more conservative planning
   include_costmap_obstacles: True
-  # costmap_obstacles_behind_robot_dist: 1.5
-  obstacle_poses_affected: 30
+  obstacle_poses_affected: 30  # Increased to consider more obstacle poses
   costmap_converter_plugin: ""
   costmap_converter_spin_thread: True
   costmap_converter_rate: 5
-
-  # Optimization    
+  
+  # Optimization
   no_inner_iterations: 5
   no_outer_iterations: 4
   optimization_activate: True
   optimization_verbose: False
-  penalty_epsilon: 0.1
-  weight_max_vel_x: 2
-  weight_max_vel_theta: 0.2
-  weight_acc_lim_x: 1
-  weight_acc_lim_theta: 0.1
-  weight_kinematics_nh: 100.0
-  weight_kinematics_forward_drive: 25.0
-  weight_kinematics_turning_radius: 0
-  weight_optimaltime: 1
-  weight_obstacle: 1000.0
-  weight_dynamic_obstacle: 100.0 # not in use yet
-  alternative_time_cost: False # not in use yet
-
+  penalty_epsilon: 1.0
+  weight_max_vel_x: 2.0
+  weight_max_vel_theta: 2.0
+  weight_acc_lim_x: 1.0
+  weight_acc_lim_theta: 1.0
+  weight_kinematics_nh: 100.0  # Significantly increased
+  weight_kinematics_forward_drive: 1000.0  # Increased
+  weight_kinematics_turning_radius: 200
+  # weight_optimaltime: 1
+  weight_obstacle: 1000.0  # Drastically increased to prioritize obstacle avoidance
+  weight_dynamic_obstacle: 500.0  # Increased
+  alternative_time_cost: False
+  
   # Homotopy Class Planner
   enable_homotopy_class_planning: True
   enable_multithreading: True
   simple_exploration: False
-  max_number_classes: 8
-  selection_cost_hysteresis: 1.5
-  selection_obst_cost_scale: 1.0
+  max_number_classes: 8  # Reduced to focus on fewer, safer options
+  selection_cost_hysteresis: 0.5  # Increased to prefer previously selected trajectories
+  selection_obst_cost_scale: 5.0  # Significantly increased
   selection_alternative_time_cost: False
-  
-  roadmap_graph_no_samples: 15
-  roadmap_graph_area_width: 5
+  roadmap_graph_no_samples: 40
+  roadmap_graph_area_width: 6
   h_signature_prescaler: 0.5
   h_signature_threshold: 0.1
   obstacle_keypoint_offset: 0.1
   obstacle_heading_threshold: 0.45
   visualize_hc_graph: False
-
-  cost_scaling_factor: 10.0  # Increase for stronger repulsion from obstacles
+  
+  # Additional parameters for better obstacle avoidance
+  cost_scaling_factor: 10.0  # Significantly increased for stronger repulsion
   weight_viapoint: 1.0

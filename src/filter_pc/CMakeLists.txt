@@ -10,6 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   pcl_ros
   pcl_conversions
+  tf2_sensor_msgs
+  tf2_ros
+  costmap_2d
 )
 
 catkin_package()
@@ -26,7 +29,14 @@ link_directories(
 )
 
 add_executable(filter src/fullnode.cpp)
+add_executable(processmap src/processmap.cpp)
+
+# add_executable(dynamic_costmap_node src/dynamic_costmap_node.cpp)
 target_link_libraries(filter ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(processmap ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
+# target_link_libraries(dynamic_costmap_node ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+
 # cmake_minimum_required(VERSION 3.0.2)
 # project(filter_pc)
 
