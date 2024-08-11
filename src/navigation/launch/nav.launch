@@ -30,6 +30,6 @@
   <node pkg="goal_gen" type="goalcalculator2.py" name="goalcalculator"/>
 
 
-  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_nav)/rviz/map.rviz"/> -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find auto_nav)/rviz/map.rviz"/>
 
 </launch>
