@@ -13,6 +13,11 @@ ros::Publisher odom_pub;
 double angular_velocity_z = 0.0;
 nav_msgs::Odometry latest_odom;
 
+bool is_shade_of_green(int r, int g, int b) {
+    // Check if green is the dominant color
+    return ((g > r) && (g > b)) || (r==g && b==g && r<10);
+}
+
 bool checkWhite(uint8_t r, uint8_t g, uint8_t b) {
     return (r >= 180 && g >= 180 && b >= 180);
 }
@@ -59,7 +64,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
             uint8_t g = point.g;
             uint8_t b = point.b;
 
-            if (point.z < z_threshold) {
+            if (point.z < z_threshold && !is_shade_of_green(r,g,b)) {
                 if (checkWhite(r, g, b) or point.y<y_threshold2)  {
                     filteredCloud.push_back(point);
                 }
