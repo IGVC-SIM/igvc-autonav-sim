@@ -31,10 +31,23 @@ class MapSearcher:
 
         self.previous_goals = list()
         self.past_orientations = []
-        self.max_orientations = 20
+        self.max_orientations = 10
 
-        self.timer = rospy.Timer(rospy.Duration(4), self.get_goal_candidates)
+        self.timer = rospy.Timer(rospy.Duration(0.1), self.check_publish)
 
+
+    def check_publish(self, event):
+        if self.bot_position is None or self.map is None:
+            rospy.loginfo("Not enough information to search and publish yet.")
+            return
+        if len(self.previous_goals) == 0:
+            self.get_goal_candidates()
+        else:
+            dist_left = self.calculate_distance(self.previous_goals[-1], self.convert_to_map_coords(self.bot_position))
+            dist_total = self.calculate_distance(self.previous_goals[-1], self.previous_goals[-2])
+            if dist_left < dist_total * 0.4:
+                self.get_goal_candidates()
+        return
 
     def map_callback(self, map_msg):
         self.map = map_msg
@@ -133,8 +146,8 @@ class MapSearcher:
                     np.min(np.linalg.norm(set1 - midpoint, axis=1)),
                     np.min(np.linalg.norm(set2 - midpoint, axis=1))
                 )
-                angle = self.validate_goal_direction(self.convert_to_map_coords(midpoint), self.previous_goals[-1], self.previous_goals[-2], mode="angle")
-                if angle > 95:
+                angle = self.calculate_angle(self.convert_to_map_coords(midpoint), self.previous_goals[-1], self.previous_goals[-2])
+                if angle > 100:
                     # Combine both criteria: distance from reference point and distance from all points
                     score = ((distance_to_reference**2)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**(1/2.5))
                     midpoints.append((midpoint, score))
@@ -150,7 +163,7 @@ class MapSearcher:
         return math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
 
-    def validate_goal_direction(self, candidate_goal, previous_goal, second_previous_goal, mode = "angle"):
+    def calculate_angle(self, candidate_goal, previous_goal, second_previous_goal):
         # Convert goals to numpy arrays for easier vector operations
         v1 = np.array(candidate_goal) - np.array(previous_goal)
         v2 = np.array(second_previous_goal) - np.array(previous_goal)
@@ -162,17 +175,19 @@ class MapSearcher:
         # Convert angle from radians to degrees
         angle_degrees = np.degrees(angle)
 
-        if mode == "angle":
-            return angle_degrees
+        return angle_degrees
 
 
-    def get_goal_candidates(self, event):
+    def get_goal_candidates(self):
         if self.bot_position is None or self.map is None:
             rospy.loginfo("Not enough information to search and publish yet.")
             return
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
-        if len(self.previous_goals)==0:
+        if self.calculate_distance(self.convert_to_map_coords(self.bot_position),(12.899319957901728,21.778561517673367))<=4:
+            can_publish = False
+            rospy.loginfo("Goal publishing stopped.")
+        elif len(self.previous_goals)==0:
             can_publish = True
             self.previous_goals.append(self.convert_to_map_coords(self.bot_position))
             desired_point = (self.bot_position[0]+3/self.map.info.resolution,self.bot_position[1])

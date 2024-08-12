@@ -53,7 +53,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
         }
 
         float y_threshold = y_max * 0.6f;
-        float y_threshold2 = 1.1;
+        float y_threshold2 = 0.8;
         float z_threshold = z_max * 0.9f;
 
         // Filter points based on thresholds and colors
