@@ -14,7 +14,7 @@
 
     <!-- <node pkg="navigation" type="gps" name="gps_redirect"/> -->
   
-  <node pkg="goal_gen" type="goalcalculator2.py" name="goalcalculator"/>
+  <!-- <node pkg="goal_gen" type="goalcalculator2.py" name="goalcalculator"/> -->
 
   <node pkg="filter_pc" type="filter" name="pointcloudhandler"/>
   <!-- <node pkg="filter_pc" type="filter2" name="pointcloudcompensator"/> -->

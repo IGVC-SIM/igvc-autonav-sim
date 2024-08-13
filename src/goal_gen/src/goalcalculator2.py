@@ -31,9 +31,15 @@ class MapSearcher:
 
         self.previous_goals = list()
         self.past_orientations = []
-        self.max_orientations = 10
+        self.max_orientations = 5
 
         self.timer = rospy.Timer(rospy.Duration(0.1), self.check_publish)
+
+        self.ramp_goals = [
+            (12,6,21.2),
+            (6.21,011.7),
+            (-4.69,10.9)
+        ]
 
 
     def check_publish(self, event):
@@ -45,7 +51,7 @@ class MapSearcher:
         else:
             dist_left = self.calculate_distance(self.previous_goals[-1], self.convert_to_map_coords(self.bot_position))
             dist_total = self.calculate_distance(self.previous_goals[-1], self.previous_goals[-2])
-            if dist_left < dist_total * 0.4:
+            if dist_left <= dist_total * 0.5:
                 self.get_goal_candidates()
         return
 
@@ -104,7 +110,7 @@ class MapSearcher:
         while len(largest_clusters) < 2:
             largest_clusters.append(np.array([]))
 
-        return largest_clusters[0], largest_clusters[1]
+        return largest_clusters[0], largest_clusters[1], points
 
 
     def convert_to_map_coords(self, coord):
@@ -113,7 +119,7 @@ class MapSearcher:
         return newcoord
 
 
-    def find_midpoints_of_nearest_pairs(self, set1, set2, reference_point, min_distance, max_distance):
+    def find_midpoints_of_nearest_pairs(self, set1, set2, all_points, reference_point, min_distance, max_distance):
         # Ensure inputs are numpy arrays
         set1 = np.array(set1)
         set2 = np.array(set2)
@@ -142,14 +148,11 @@ class MapSearcher:
             midpoint = (p1 + p2) / 2
             distance_to_reference = np.linalg.norm(midpoint - reference_point)
             if min_distance <= distance_to_reference <= max_distance:
-                min_distance_to_points = min(
-                    np.min(np.linalg.norm(set1 - midpoint, axis=1)),
-                    np.min(np.linalg.norm(set2 - midpoint, axis=1))
-                )
+                min_distance_to_points = np.min(np.linalg.norm(all_points - midpoint, axis=1))
                 angle = self.calculate_angle(self.convert_to_map_coords(midpoint), self.previous_goals[-1], self.previous_goals[-2])
-                if angle > 100:
+                if angle > 95:
                     # Combine both criteria: distance from reference point and distance from all points
-                    score = ((distance_to_reference**2)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**(1/2.5))
+                    score = ((distance_to_reference**2.5)+(min_distance_to_points**2))*(angle)*(nearest_pt_dist)
                     midpoints.append((midpoint, score))
 
         # Sort midpoints by combined score (higher is better)
@@ -162,7 +165,13 @@ class MapSearcher:
     def calculate_distance(self, point1, point2):
         return math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
-
+    def check_near_ramp(self):
+        for i, goal in enumerate(self.ramp_goals[:-1]):
+            dist = self.calculate_distance(self.convert_to_map_coords(self.bot_position), goal)
+            if dist <= 10:
+                return i
+        return False
+    
     def calculate_angle(self, candidate_goal, previous_goal, second_previous_goal):
         # Convert goals to numpy arrays for easier vector operations
         v1 = np.array(candidate_goal) - np.array(previous_goal)
@@ -184,17 +193,20 @@ class MapSearcher:
             return
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
-        if self.calculate_distance(self.convert_to_map_coords(self.bot_position),(12.899319957901728,21.778561517673367))<=4:
+
+        near_ramp = self.check_near_ramp()
+        if near_ramp != False:
+            rospy.loginfo("Ramp mode.")
             can_publish = False
-            rospy.loginfo("Goal publishing stopped.")
+            self.publish_goal(self.ramp_goals[near_ramp])
         elif len(self.previous_goals)==0:
             can_publish = True
             self.previous_goals.append(self.convert_to_map_coords(self.bot_position))
             desired_point = (self.bot_position[0]+3/self.map.info.resolution,self.bot_position[1])
         else:
             can_publish = False
-            set1, set2 = self.cluster_points_in_grid(map_array)
-            midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, np.array(self.bot_position), 4/self.map.info.resolution, 7/self.map.info.resolution)
+            set1, set2, all_points = self.cluster_points_in_grid(map_array)
+            midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, all_points, np.array(self.bot_position), 4/self.map.info.resolution, 9/self.map.info.resolution)
             for midpoint in midpoints:
                 value = map_array[int(midpoint[1]),int(midpoint[0])]
                 if value == 0:
