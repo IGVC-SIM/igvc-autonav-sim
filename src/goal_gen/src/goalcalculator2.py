@@ -36,28 +36,29 @@ class MapSearcher:
         self.timer = rospy.Timer(rospy.Duration(0.1), self.check_publish)
 
         self.ramp_goals = [
-            (12,6,21.2),
-            (6.21,011.7),
-            (-4.69,10.9)
+            (10.981856913385355, 20.638044400288646),
+            (-14.127625860234343, 22.478713612828365)
         ]
 
+        self.near_ramp = False
+        self.ramp_reached = False
 
     def check_publish(self, event):
         if self.bot_position is None or self.map is None:
             rospy.loginfo("Not enough information to search and publish yet.")
             return
-        if len(self.previous_goals) == 0:
+        self.check_near_ramp()
+        if len(self.previous_goals) == 0 or self.ramp_reached:
             self.get_goal_candidates()
         else:
             dist_left = self.calculate_distance(self.previous_goals[-1], self.convert_to_map_coords(self.bot_position))
             dist_total = self.calculate_distance(self.previous_goals[-1], self.previous_goals[-2])
-            if dist_left <= dist_total * 0.5:
+            if dist_left <= dist_total * 0.6:
                 self.get_goal_candidates()
         return
 
     def map_callback(self, map_msg):
         self.map = map_msg
-
 
     def odom_callback(self, odom_msg):
         if self.map is None:
@@ -89,7 +90,7 @@ class MapSearcher:
             rospy.logerr(f"TF Error: {e}")
 
 
-    def cluster_points_in_grid(self, grid, eps=5, min_samples=2):
+    def cluster_points_in_grid(self, grid, eps=6, min_samples=6):
         points = np.argwhere(grid > 0)
         points = points[:, [1, 0]]  # Swap columns to get (x, y) format
         print("Map shape:", points.shape)
@@ -104,14 +105,15 @@ class MapSearcher:
         largest_clusters = clusters[:2]
         
         print("Number of clusters found:", len(clusters))
-        print(f"Number of points in largest cluster: {len(largest_clusters[0])}")
-        print(f"Number of points in second largest cluster: {len(largest_clusters[1])}")
         
         while len(largest_clusters) < 2:
             largest_clusters.append(np.array([]))
 
-        return largest_clusters[0], largest_clusters[1], points
+        print(f"Number of points in largest cluster: {len(largest_clusters[0])}")
+        print(f"Number of points in second largest cluster: {len(largest_clusters[1])}")
 
+        return largest_clusters[0], largest_clusters[1], points
+        
 
     def convert_to_map_coords(self, coord):
         origin = np.array([self.map.info.origin.position.x, self.map.info.origin.position.y])
@@ -152,7 +154,7 @@ class MapSearcher:
                 angle = self.calculate_angle(self.convert_to_map_coords(midpoint), self.previous_goals[-1], self.previous_goals[-2])
                 if angle > 95:
                     # Combine both criteria: distance from reference point and distance from all points
-                    score = ((distance_to_reference**2.5)+(min_distance_to_points**2))*(angle)*(nearest_pt_dist)
+                    score = ((distance_to_reference**2.5)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**2.5)
                     midpoints.append((midpoint, score))
 
         # Sort midpoints by combined score (higher is better)
@@ -162,15 +164,65 @@ class MapSearcher:
         return np.array([(m[0][0], m[0][1]) for m in midpoints])
 
 
+    def is_point_on_line(self, point_set, point1, point2):
+        def bresenham_line(x0, y0, x1, y1):
+            points = set()
+            dx = abs(x1 - x0)
+            dy = abs(y1 - y0)
+            x, y = x0, y0
+            sx = 1 if x0 < x1 else -1
+            sy = 1 if y0 < y1 else -1
+            
+            if dx > dy:
+                err = dx / 2.0
+                while x != x1:
+                    points.add((x, y))
+                    err -= dy
+                    if err < 0:
+                        y += sy
+                        err += dx
+                    x += sx
+            else:
+                err = dy / 2.0
+                while y != y1:
+                    points.add((x, y))
+                    err -= dx
+                    if err < 0:
+                        x += sx
+                        err += dy
+                    y += sy
+            
+            points.add((x, y))
+            return points
+
+        x1, y1 = map(int, point1)
+        x2, y2 = map(int, point2)
+        
+        line_points = bresenham_line(x1, y1, x2, y2)
+        
+        for point in point_set:
+            if tuple(map(int, point)) in line_points:
+                return True
+        return False
+
+
+
     def calculate_distance(self, point1, point2):
         return math.sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
 
     def check_near_ramp(self):
-        for i, goal in enumerate(self.ramp_goals[:-1]):
-            dist = self.calculate_distance(self.convert_to_map_coords(self.bot_position), goal)
-            if dist <= 10:
-                return i
-        return False
+        # for i, goal in enumerate(self.ramp_goals[:-1]):
+        #     dist = self.calculate_distance(self.convert_to_map_coords(self.bot_position), goal)
+        #     if dist <= 10:
+        #         return i
+        if self.calculate_distance(self.convert_to_map_coords(self.bot_position), self.ramp_goals[0]) < 18:
+            self.near_ramp = True
+        else:
+            self.near_ramp = False
+        if self.calculate_distance(self.convert_to_map_coords(self.bot_position), self.ramp_goals[-1]) < 1:
+            self.previous_goals.append(self.convert_to_map_coords(self.bot_position))
+            self.previous_goals.append(self.ramp_goals[-1])
+            self.ramp_reached = True
     
     def calculate_angle(self, candidate_goal, previous_goal, second_previous_goal):
         # Convert goals to numpy arrays for easier vector operations
@@ -194,11 +246,10 @@ class MapSearcher:
         map_array = np.array(self.map.data).reshape((self.map.info.height, self.map.info.width))
         print("Map shape: ", map_array.shape)
 
-        near_ramp = self.check_near_ramp()
-        if near_ramp != False:
+        if self.near_ramp != False:
             rospy.loginfo("Ramp mode.")
             can_publish = False
-            self.publish_goal(self.ramp_goals[near_ramp])
+            # self.publish_goal(self.ramp_goals[near_ramp])
         elif len(self.previous_goals)==0:
             can_publish = True
             self.previous_goals.append(self.convert_to_map_coords(self.bot_position))
@@ -206,12 +257,15 @@ class MapSearcher:
         else:
             can_publish = False
             set1, set2, all_points = self.cluster_points_in_grid(map_array)
-            midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, all_points, np.array(self.bot_position), 4/self.map.info.resolution, 9/self.map.info.resolution)
-            for midpoint in midpoints:
-                value = map_array[int(midpoint[1]),int(midpoint[0])]
-                if value == 0:
-                    desired_point = midpoint
-                    can_publish = True
+            if len(set1) > 200 or len(set2) > 200:
+                midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, all_points, np.array(self.bot_position), 4/self.map.info.resolution, 9/self.map.info.resolution)
+                for midpoint in midpoints:
+                    value = map_array[int(midpoint[1]),int(midpoint[0])]
+                    if value == 0:
+                        desired_point = midpoint
+                        can_publish = True
+            else:
+                rospy.loginfo("No sets found with point lengths larger than 200. Set lengths:", len(set1), ",", len(set2))
 
         if can_publish == True:
             print("Map array goal: ", desired_point)

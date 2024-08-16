@@ -8,6 +8,45 @@
 #include <nav_msgs/Odometry.h>
 
 
+std::vector<std::vector<double>> updateGoalsWithIntermediates(const std::vector<std::vector<double>>& original_goals, double max_distance = 4.0) {
+    std::vector<std::vector<double>> updated_goals;
+    
+    for (size_t i = 0; i < original_goals.size() - 1; ++i) {
+        const auto& start = original_goals[i];
+        const auto& end = original_goals[i + 1];
+        
+        updated_goals.push_back(start);
+        
+        double dx = end[0] - start[0];
+        double dy = end[1] - start[1];
+        double distance = std::sqrt(dx*dx + dy*dy);
+        
+        if (distance > max_distance) {
+            int num_intermediates = std::ceil(distance / max_distance) - 1;
+            double step_x = dx / (num_intermediates + 1);
+            double step_y = dy / (num_intermediates + 1);
+            
+            for (int j = 1; j <= num_intermediates; ++j) {
+                std::vector<double> intermediate_goal = start;
+                intermediate_goal[0] += j * step_x;
+                intermediate_goal[1] += j * step_y;
+                
+                // Linearly interpolate orientation
+                for (int k = 2; k < 6; ++k) {
+                    intermediate_goal[k] = start[k] + (end[k] - start[k]) * (j / (num_intermediates + 1.0));
+                }
+                
+                updated_goals.push_back(intermediate_goal);
+            }
+        }
+    }
+    
+    updated_goals.push_back(original_goals.back());
+    
+    return updated_goals;
+}
+
+
 class GoalPublisher
 {
 private:
@@ -24,19 +63,17 @@ public:
     {
         goal_pub_ = nh_.advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 1);
         odom_sub_ = nh_.subscribe<nav_msgs::Odometry>("/odom",1,&GoalPublisher::odomCallback,this);
-        // Initialize goals (replace these with your actual map coordinates)
-        // goals_ = {{-15.286769536694717, 22.865746635651142, -0.0009297148376025083,-0.002186954408046168, 0.47346301740409347,-0.8808104926778229},
-        //     {-5.927406361436967,9.822598731074036, -9.189294660504249e-05,-0.0027969263674667627,0.00023919738084792402,-0.9999960557638187},
-        //     {5.242101677453615,10.25232650192324, -0.00010199060590320767,-0.0024030102656244865, 0.04316156223982357,-0.9990652104265254},
-        //     {12.899319957901728,21.778561517673367, 3.3468186372837667e-05,-0.0022263573359656555,-0.005320117068503288,-0.9999833691453426}};
-        goals_ = {{10.060782411900574,19.55386875493616,0.0023094812222317494,0.00105135950916555,-0.9054513333614352,0.4244425094799837},
-                {7.261207057518405,10.178282974761832,0.00267746883280113,-4.4892397831081286e-05,-0.9999945468410281,0.0019327269669803559},
-                {-6.5095769814604525,10.479681038732007,0.002362530250182584,-5.161006486261082e-05,-0.9994031592064267,-0.034463620753366724},
-                {-12.312336978570412,21.25401752856292,0.0024628237965920157,-0.000436336688351941, -0.9874569932039395,-0.15786839671662087}};
-        //COUrse exit,Ramp ENtry, Ramp Exit, Course ENtry
-        // reverse(goals_.begin(),goals_.end());
+        
+        // Initialize original goals
+        goals_ = {{10.981856913385355, 20.638044400288646, 0.0025062586038971544, 0.0011526581582510702, -0.9204649425761795, 0.3908154034006479},
+{5.361658605594936, 10.8221819978611, 0.002450488413233407, -3.1195735068890354e-05, -0.9998266730773296, -0.018455837463561522},
+{-7.931561996215021, 11.314941002522998, 0.0026270809339856184, -7.782901614172671e-05, -0.9998286404840551, -0.018324356911410388},
+{-14.127625860234343, 22.478713612828365, 0.002357779524645117, 5.732174590407077e-06, -0.9998937460297591, -0.0143853221525018}};
+        
+        // Update goals with intermediates
+        goals_ = updateGoalsWithIntermediates(goals_);
+        
         ROS_INFO("Goal Publisher initialized with %zu goals", goals_.size());
-    
     }
 
     double distance(std::vector<double> a, std::vector<double> b)
@@ -52,12 +89,13 @@ public:
     }
     bool check_cond()
     {
-        if(this->distance(curr_pos,goals_[current_goal_index_]) < 9.0)
+        double distance = this->distance(curr_pos,goals_[current_goal_index_]);
+        if(distance < 1.0 || (current_goal_index_==0 && distance < 16.0))
         {
             current_goal_index_++;
             return true;
         }
-        ROS_INFO("Distance to next goal %f",this->distance(curr_pos,goals_[current_goal_index_]));
+        ROS_INFO("Distance to next goal %f",distance);
         return false;
     }
     void publishNextGoal()
@@ -103,7 +141,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "goal_publisher_node");
     GoalPublisher publisher;
-
+    int i = 0;
     while (publisher.hasMoreGoals() && ros::ok())
     {
         if(publisher.check_cond())

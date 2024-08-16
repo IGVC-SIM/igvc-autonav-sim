@@ -7,14 +7,23 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_cloud.h>
 #include <iostream>
+#include <cmath>
 
 ros::Publisher filtered_point_cloud_pub;
 ros::Publisher odom_pub;
 double angular_velocity_z = 0.0;
 nav_msgs::Odometry latest_odom;
 
+// Hard-coded reference point
+const double REF_X = -7.931561996215021;  // Replace with your reference X coordinate
+const double REF_Y = 14.314941002522998;  // Replace with your reference Y coordinate
+const double DISTANCE_THRESHOLD = 10.0;
+
+const double REF_X2 = -14.127625860234343;  // Replace with your reference X coordinate
+const double REF_Y2 = 22.478713612828365;  // Replace with your reference Y coordinate
+const double DISTANCE_THRESHOLD2 = 12.0;
+
 bool is_shade_of_green(int r, int g, int b) {
-    // Check if green is the dominant color
     return ((g > r) && (g > b)) || (r==g && b==g && r<10);
 }
 
@@ -30,9 +39,19 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     latest_odom = *msg;
 }
 
+double calculateDistance(double x1, double y1, double x2, double y2) {
+    return std::sqrt(std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2));
+}
+
 void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
-    // Only process and publish if angular velocity is below threshold
-    if (std::abs(angular_velocity_z) < 0.05) {
+    // Calculate distance from the reference point
+    double current_x = latest_odom.pose.pose.position.x;
+    double current_y = latest_odom.pose.pose.position.y;
+    double distance = calculateDistance(current_x, current_y, REF_X, REF_Y);
+    double distance2 = calculateDistance(current_x, current_y, REF_X2, REF_Y2);
+
+    // Only process and publish if angular velocity is below threshold and distance is greater than 5
+    if (std::abs(angular_velocity_z) < 0.05 && !(distance < DISTANCE_THRESHOLD && distance2 > DISTANCE_THRESHOLD2)) {
         // Convert the ROS message to a PCL PointCloud
         pcl::PointCloud<pcl::PointXYZRGB> cloud;
         pcl::fromROSMsg(*input, cloud);
@@ -81,6 +100,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
 
         // Publish the corresponding odometry data
         latest_odom.header.stamp = input->header.stamp;
+        
         odom_pub.publish(latest_odom);
     }
 }

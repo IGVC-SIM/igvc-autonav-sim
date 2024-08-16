@@ -62,12 +62,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /projected_map
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Alpha: 0.699999988079071
       Class: rviz/Map
       Color Scheme: costmap
@@ -474,7 +474,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 18.673778533935547
+      Distance: 65.23301696777344
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -482,17 +482,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 3.7859268188476562
-        Y: -24.555124282836914
-        Z: 0.0129852294921875
+        X: 8.093220710754395
+        Y: -10.685511589050293
+        Z: 0.0065460205078125
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0823577642440796
+      Pitch: 1.544796347618103
       Target Frame: <Fixed Frame>
-      Yaw: 2.9869306087493896
+      Yaw: 2.6396737098693848
     Saved:
       - Class: rviz/Orbit
         Distance: 52.40496063232422
