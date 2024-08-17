@@ -50,8 +50,8 @@ DWAPlannerROS:
   occdist_scale: 0.1           # 0.01   - weighting for how much the controller should avoid obstacles
   forward_point_distance: 1.0 # 0.325  - how far along to place an additional scoring point
   stop_time_buffer: 0.2        # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
-  scaling_speed: 1.5           # 0.25   - absolute velocity at which to start scaling the robot's footprint
-  max_scaling_factor: 0.1       # 0.2    - how much to scale the robot's footprint when at speed.
+  scaling_speed: 1.0           # 0.25   - absolute velocity at which to start scaling the robot's footprint
+  max_scaling_factor: 0.03       # 0.2    - how much to scale the robot's footprint when at speed.
 
 # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05  # 0.05   - how far to travel before resetting oscillation flags

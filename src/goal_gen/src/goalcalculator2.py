@@ -153,9 +153,9 @@ class MapSearcher:
             if min_distance <= distance_to_reference <= max_distance:
                 min_distance_to_points = np.min(np.linalg.norm(all_points - midpoint, axis=1))
                 angle = self.calculate_angle(self.convert_to_map_coords(midpoint), self.previous_goals[-1], self.previous_goals[-2])
-                if angle > 93:
+                if angle > 90:
                     # Combine both criteria: distance from reference point and distance from all points
-                    score = ((distance_to_reference**2)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**(1/2.5))                    
+                    score = ((distance_to_reference**2)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**(1/2))                    
                     midpoints.append((midpoint, score))
 
         # Sort midpoints by combined score (higher is better)
