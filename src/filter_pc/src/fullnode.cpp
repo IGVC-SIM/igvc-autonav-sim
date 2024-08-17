@@ -21,7 +21,7 @@ const double DISTANCE_THRESHOLD = 10.0;
 
 const double REF_X2 = -14.127625860234343;  // Replace with your reference X coordinate
 const double REF_Y2 = 22.478713612828365;  // Replace with your reference Y coordinate
-const double DISTANCE_THRESHOLD2 = 12.0;
+const double DISTANCE_THRESHOLD2 = 14.0;
 
 bool is_shade_of_green(int r, int g, int b) {
     return ((g > r) && (g > b)) || (r==g && b==g && r<10);

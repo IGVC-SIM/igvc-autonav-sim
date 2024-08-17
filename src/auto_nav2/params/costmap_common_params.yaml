@@ -6,9 +6,9 @@ footprint_padding: 0.1  # Adjust based on your needs
 
 # robot_radius: 0.65  # Adjust this value to match your robot's radius in meters
 
-inflation_radius: 0.02  # Increase this value
+inflation_radius: 0.1  # Increase this value
 
-cost_scaling_factor: 5.0  # Reduced from 100.0
+cost_scaling_factor: 10.0  # Reduced from 100.0
 
 map_type: costmap
 # observation_sources: scan
@@ -19,4 +19,4 @@ map_topic: /projected_map
 plugins:
   - {name: static_layer,            type: "costmap_2d::StaticLayer"}
   - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
-  # - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}
+  - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}

@@ -90,7 +90,7 @@ public:
     bool check_cond()
     {
         double distance = this->distance(curr_pos,goals_[current_goal_index_]);
-        if(distance < 1.0 || (current_goal_index_==0 && distance < 16.0))
+        if(distance < 1.0 || (current_goal_index_==0 && distance < 7.0))
         {
             current_goal_index_++;
             return true;
