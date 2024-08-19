@@ -99,9 +99,9 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
         filtered_point_cloud_pub.publish(output);
 
         // Publish the corresponding odometry data
-        latest_odom.header.stamp = input->header.stamp;
+        // latest_odom.header.stamp = input->header.stamp;
         
-        odom_pub.publish(latest_odom);
+        // odom_pub.publish(latest_odom);
     }
 }
 
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
     ros::Subscriber cmd_vel_sub = nh.subscribe("/cmd_vel", 100, cmdVelCallback);
     ros::Subscriber odom_sub = nh.subscribe("/odom", 100, odomCallback);
     filtered_point_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/altered_point_cloud", 100);
-    odom_pub = nh.advertise<nav_msgs::Odometry>("/filtered_odom", 100);
+    // odom_pub = nh.advertise<nav_msgs::Odometry>("/filtered_odom", 100);
 
     ros::spin();
     return 0;

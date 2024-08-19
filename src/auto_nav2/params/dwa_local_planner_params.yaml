@@ -1,33 +1,39 @@
 
 NavfnROS:
   visualize_potential: false    #Publish potential for rviz as pointcloud2, not really helpful, default false
-  allow_unknown: false          #Specifies whether or not to allow navfn to create plans that traverse unknown space, default true
+  allow_unknown: true          #Specifies whether or not to allow navfn to create plans that traverse unknown space, default true
                                 #Needs to have track_unknown_space: true in the obstacle / voxel layer (in costmap_commons_param) to work
-  planner_window_x: 0.0         #Specifies the x size of an optional window to restrict the planner to, default 0.0
-  planner_window_y: 0.0         #Specifies the y size of an optional window to restrict the planner to, default 0.0
+  # planner_window_x: 0.0         #Specifies the x size of an optional window to restrict the planner to, default 0.0
+  # planner_window_y: 0.0         #Specifies the y size of an optional window to restrict the planner to, default 0.0
   
-  default_tolerance: 0.1        #If the goal is in an obstacle, the planer will plan to the nearest point in the radius of default_tolerance, default 0.0
-                                #The area is always searched, so could be slow for big values
+  default_tolerance: 0.0        #If the goal is in an obstacle, the planer will plan to the nearest point in the radius of default_tolerance, default 0.0
+  #                               #The area is always searched, so could be slow for big values
+  max_planning_retries: 10
+  use_astar: true
+  planner_patience: 5.0
+
+
+
 DWAPlannerROS:
 
 # Robot Configuration Parameters - Kobuki
-  max_vel_x: 3.0  # 0.55
+  max_vel_x: 1.3  # 0.55
   min_vel_x: 0.5 
 
   max_vel_y: 0.0  # diff drive robot
   min_vel_y: 0.0  # diff drive robot
 
-  max_vel_trans: 3.0 # choose slightly less than the base's capability
+  max_vel_trans: 1.3 # choose slightly less than the base's capability
   min_vel_trans: 0.5  # this is the min trans velocity when there is negligible rotational velocity
-  trans_stopped_vel: 0.4
+  # trans_stopped_vel: 0.4
 
   # Warning!
   #   do not set min_trans_vel to 0.0 otherwise dwa will always think translational velocities
   #   are non-negligible and small in place rotational velocities will be created.
 
   max_vel_theta: 2.0  # choose slightly less than the base's capability
-  min_vel_theta: 0.4  # this is the min angular velocity when there is negligible translational velocity
-  theta_stopped_vel: 0.3
+  min_vel_theta: 0.2  # this is the min angular velocity when there is negligible translational velocity
+  # theta_stopped_vel: 0.3
   
   acc_lim_x: 2.0 # maximum is theoretically 2.0, but we 
   acc_lim_theta: 2.0
@@ -39,19 +45,24 @@ DWAPlannerROS:
   # latch_xy_goal_tolerance: false
 
 # Forward Simulation Parameters
-  sim_time: 2       # 1.7
+  sim_time: 2.0       # 1.7
   vx_samples: 20       # 3
   vy_samples: 1       # diff drive robot, there is only one sample
   vtheta_samples: 20  # 20
 
 # Trajectory Scoring Parameters
-  path_distance_bias: 28.0      # 32.0   - weighting for how much it should stick to the global path plan
-  goal_distance_bias: 18.0      # 24.0   - wighting for how much it should attempt to reach its goal
-  occdist_scale: 0.1           # 0.01   - weighting for how much the controller should avoid obstacles
+  path_distance_bias: 32.0      # 32.0   - weighting for how much it should stick to the global path plan
+  goal_distance_bias: 24.0      # 24.0   - wighting for how much it should attempt to reach its goal
+  occdist_scale: 0.01           # 0.01   - weighting for how much the controller should avoid obstacles
   forward_point_distance: 1.0 # 0.325  - how far along to place an additional scoring point
-  stop_time_buffer: 0.2        # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
-  scaling_speed: 1.0           # 0.25   - absolute velocity at which to start scaling the robot's footprint
-  max_scaling_factor: 0.03       # 0.2    - how much to scale the robot's footprint when at speed.
+  # stop_time_buffer: 0.1        # 0.2    - amount of time a robot must stop in before colliding for a valid traj.
+  # scaling_speed: 1.0           # 0.25   - absolute velocity at which to start scaling the robot's footprint
+  # max_scaling_factor: 0.03       # 0.2    - how much to scale the robot's footprint when at speed.
+
+  sim_granularity: 0.025
+  angular_sim_granularity: 0.025
+
+  max_obstacle_distance: 2.0
 
 # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05  # 0.05   - how far to travel before resetting oscillation flags
@@ -64,6 +75,10 @@ DWAPlannerROS:
 
 # Differential-drive robot configuration - necessary?
   holonomic_robot: false
+
+  robot_radius: 0.35
+
+  dwa: true
 
 
 # GlobalPlanner:                                  # Also see: http://wiki.ros.org/global_planner

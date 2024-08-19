@@ -1,12 +1,12 @@
-obstacle_range: 4  # Reduced from 5
-raytrace_range: 4.5  # Reduced from 5.5
+obstacle_range: 15  # Reduced from 5
+raytrace_range: 15  # Reduced from 5.5
 
-footprint: [[0.25, 0.35], [0.25, -0.35], [-0.45, -0.35], [-0.45, 0.35]]
-footprint_padding: 0.1  # Adjust based on your needs
+# footprint: [[0.25, 0.35], [0.25, -0.35], [-0.45, -0.35], [-0.45, 0.35]]
+# footprint_padding: 0.1  # Adjust based on your needs
 
 # robot_radius: 0.65  # Adjust this value to match your robot's radius in meters
-
-inflation_radius: 0.1  # Increase this value
+inflation_layer:
+  inflation_radius: 0.3  # Increase this value
 
 cost_scaling_factor: 10.0  # Reduced from 100.0
 
@@ -18,5 +18,5 @@ map_topic: /projected_map
 
 plugins:
   - {name: static_layer,            type: "costmap_2d::StaticLayer"}
-  - {name: obstacle_layer,          type: "costmap_2d::VoxelLayer"}
+  - {name: obstacle_layer,          type: "costmap_2d::ObstacleLayer"}
   - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}

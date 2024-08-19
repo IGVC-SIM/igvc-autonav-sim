@@ -8,7 +8,7 @@
 #include <nav_msgs/Odometry.h>
 
 
-std::vector<std::vector<double>> updateGoalsWithIntermediates(const std::vector<std::vector<double>>& original_goals, double max_distance = 4.0) {
+std::vector<std::vector<double>> updateGoalsWithIntermediates(const std::vector<std::vector<double>>& original_goals, double max_distance = 5.0) {
     std::vector<std::vector<double>> updated_goals;
     
     for (size_t i = 0; i < original_goals.size() - 1; ++i) {
@@ -68,7 +68,7 @@ public:
         goals_ = {{10.981856913385355, 20.638044400288646, 0.0025062586038971544, 0.0011526581582510702, -0.9204649425761795, 0.3908154034006479},
 {5.361658605594936, 10.8221819978611, 0.002450488413233407, -3.1195735068890354e-05, -0.9998266730773296, -0.018455837463561522},
 {-7.931561996215021, 11.314941002522998, 0.0026270809339856184, -7.782901614172671e-05, -0.9998286404840551, -0.018324356911410388},
-{-14.127625860234343, 22.478713612828365, 0.002357779524645117, 5.732174590407077e-06, -0.9998937460297591, -0.0143853221525018}};
+{-14.127625860234343, 21.478713612828365, 0.002357779524645117, 5.732174590407077e-06, -0.9998937460297591, -0.0143853221525018}};
         
         // Update goals with intermediates
         goals_ = updateGoalsWithIntermediates(goals_);
