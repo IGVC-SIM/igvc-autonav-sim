@@ -1,0 +1,75 @@
+TebLocalPlannerROS:
+  odom_topic: odom
+    
+  # Trajectory
+  teb_autosize: True
+  dt_ref: 0.3
+  dt_hysteresis: 0.1
+  global_plan_overwrite_orientation: True
+  allow_init_with_backwards_motion: False
+  max_global_plan_lookahead_dist: 3.0
+  feasibility_check_no_poses: 5
+  publish_feedback: False
+    
+  # Robot Configuration
+  max_vel_x: 1.0
+  max_vel_x_backwards: 0.4
+  max_vel_theta: 0.5
+  acc_lim_x: 0.5
+  acc_lim_theta: 0.5
+  min_turning_radius: 0.0 # Differential drive can turn in place
+  wheelbase: 0.0 # Not applicable for differential drive
+  cmd_angle_instead_rotvel: False # Use rotvel for differential drive
+
+  # Footprint
+  footprint_model:
+    type: "polygon"
+    vertices: [[-0.49, -0.36], [-0.49, 0.36], [0.49, 0.36], [0.49, -0.36]] # Adjusted for your robot's dimensions
+
+  # GoalTolerance
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.1
+  free_goal_vel: False
+    
+  # Obstacles
+  min_obstacle_dist: 0.25
+  include_costmap_obstacles: True
+  costmap_obstacles_behind_robot_dist: 1.0
+  obstacle_poses_affected: 30
+  inflation_dist: 0.6
+  include_dynamic_obstacles: True
+  dynamic_obstacle_inflation_dist: 0.6
+
+  # Optimization
+  no_inner_iterations: 5
+  no_outer_iterations: 4
+  optimization_activate: True
+  optimization_verbose: False
+  penalty_epsilon: 0.1
+  weight_max_vel_x: 2
+  weight_max_vel_theta: 1
+  weight_acc_lim_x: 1
+  weight_acc_lim_theta: 1
+  weight_kinematics_nh: 1000
+  weight_kinematics_forward_drive: 1
+  weight_kinematics_turning_radius: 1
+  weight_optimaltime: 1
+  weight_shortest_path: 0
+  weight_obstacle: 50
+  weight_inflation: 0.2
+  weight_dynamic_obstacle: 10
+  weight_dynamic_obstacle_inflation: 0.2
+  weight_viapoint: 1
+
+  # Homotopy Class Planner
+  enable_homotopy_class_planning: True
+  enable_multithreading: True
+  max_number_classes: 4
+  selection_cost_hysteresis: 1.0
+  selection_prefer_initial_plan: 0.95
+  selection_obst_cost_scale: 1.0
+  selection_alternative_time_cost: False
+
+  # Recovery
+  shrink_horizon_backup: True
+  oscillation_recovery: True
