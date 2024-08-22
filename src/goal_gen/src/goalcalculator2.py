@@ -161,7 +161,12 @@ class MapSearcher:
                 if  angle>94:
                     # Combine both criteria: distance from reference point and distance from all points
                     score = ((distance_to_reference**2)+(min_distance_to_points**1.7)+(nearest_pt_dist**2))*(angle**(1/2))                    
-                    midpoints.append((midpoint, score))
+                    if angle < 100:
+                            if distance_to_reference < 4:
+                                midpoints.append((midpoint, score))
+                    else:
+                        if distance_to_reference >= 4:
+                            midpoints.append((midpoint, score))
 
         # Sort midpoints by combined score (higher is better)
         midpoints.sort(key=lambda x: x[1], reverse=True)
@@ -221,7 +226,7 @@ class MapSearcher:
         #     dist = self.calculate_distance(self.convert_to_map_coords(self.bot_position), goal)
         #     if dist <= 10:
         #         return i
-        if self.calculate_distance(self.convert_to_map_coords(self.bot_position), self.ramp_goals[0]) < 10:
+        if self.calculate_distance(self.convert_to_map_coords(self.bot_position), self.ramp_goals[0]) < 9:
             self.near_ramp = True
             rospy.loginfo("Near ramp")
         # else:
@@ -277,7 +282,7 @@ class MapSearcher:
             can_publish = False
             set1, set2, all_points = self.cluster_points_in_grid(map_array)
             if len(set1) > 200 and len(set2) > 200:
-                midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, all_points, np.array(self.bot_position), 4/self.map.info.resolution, 6/self.map.info.resolution)
+                midpoints = self.find_midpoints_of_nearest_pairs(set1, set2, all_points, np.array(self.bot_position), 3/self.map.info.resolution, 6/self.map.info.resolution)
                 for midpoint in midpoints:
                     value = map_array[int(midpoint[1]),int(midpoint[0])]
                     if value == 0:

@@ -51,7 +51,7 @@ void filterPointCloud(const sensor_msgs::PointCloud2ConstPtr& input) {
     double distance2 = calculateDistance(current_x, current_y, REF_X2, REF_Y2);
 
     // Only process and publish if angular velocity is below threshold and distance is greater than 5
-    if (std::abs(angular_velocity_z) < 0.05 && !(distance < DISTANCE_THRESHOLD && distance2 > DISTANCE_THRESHOLD2)) {
+    if (std::abs(angular_velocity_z) < 0.2 && !(distance < DISTANCE_THRESHOLD && distance2 > DISTANCE_THRESHOLD2)) {
         // Convert the ROS message to a PCL PointCloud
         pcl::PointCloud<pcl::PointXYZRGB> cloud;
         pcl::fromROSMsg(*input, cloud);
