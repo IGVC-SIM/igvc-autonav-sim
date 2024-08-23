@@ -6,16 +6,13 @@
     ```bash
     roslaunch simulation igvc_sim.launch
     ```
-2. Running the 2d cost mapper
+2. Running the point cloud alterer, costmapper and goal calculator
     ```bash
-    rosrun filter_pc fullnode.py
-    rosrun mapping2 octomaplauncher.launch
+    roslaunch navigation nav.launch
     ```
-    Visualize output on ``/projected_map`` map.
-3. Running the goal calculator
-    ```bash
-    rosrun goal_gen goalcalculator.py
+3. Running the motion planner
+   ```bash
+    roslaunch auto_nav2 move_base.launch
     ```
-    Visualize output on ``/found_block`` marker or ``/move_base_simple/goal`` pose.
-4. Running the motion planner
-    todo: add instructions to readme
+
+## [Video of autonav sim run](https://drive.google.com/file/d/1GMyDu3V81FsugVNzAKV4hBZ7PlW4KRAI/view?usp=drive_link)
